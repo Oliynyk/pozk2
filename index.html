@@ -9,6 +9,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Підключення стилів -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="manifest" href="manifest.json">    
+     <link rel="apple-touch-icon" href="/rozk1/images/icon-192x192.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700;900&display=swap" rel="stylesheet">
@@ -2198,8 +2200,15 @@
         class="fixed hidden bottom-6 right-6 w-14 h-14 bg-brand-cyan rounded-full shadow-[0_0_20px_rgba(0,242,234,0.4)] flex items-center justify-center text-[#0f172a] text-xl z-[111] hover:scale-105 active:scale-95 transition-all duration-300">
         <i class="fa-solid fa-pen transition-transform duration-300" id="fab-icon"></i>
     </button>
-
-    <!-- External Logic 
+<script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => console.log('ServiceWorker registered:', registration.scope))
+                    .catch(error => console.log('ServiceWorker registration failed:', error));
+            });
+        }
+    </script>    <!-- External Logic 
        Потім звільнення -->
     <script type="module" src="login.js"></script>
     <script type="module" src="chat-folders.js"></script>
@@ -2218,5 +2227,6 @@
     <script src="calendar.js"></script>
     <!--Add other scripts here as needed: news.js etc -->
 </body>
+
 
 </html>
