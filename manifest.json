@@ -1,0 +1,22 @@
+{
+  "name": "Назва Вашого PWA",
+  "short_name": "PWA-Сайт",
+  "description": "Короткий опис вашого прогресивного веб-додатку.",
+  "start_url": "/", 
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#c5e1d100",
+  "icons": [
+    {
+      "src": "images/clear_day.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/clear_day.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
