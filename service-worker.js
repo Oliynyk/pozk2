@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rozk1-pwa-v1'; // Змініть назву кешу при оновленні файлів
+const CACHE_NAME = 'rozk2-pwa-v1'; // Змініть назву кешу при оновленні файлів
 
 const urlsToCache = [
   // 1. Кореневий шлях (зазвичай index.html)
@@ -9,13 +9,12 @@ const urlsToCache = [
 
   // 3. Стилі (CSS)
   'style.css',
-  'style-news.css',
-  'meteo.css',
+
   
   // 4. Скрипти (JS)
-  'script.js',
+
   'news.js',
-  'time.card.js',
+
   
   // 5. Маніфест
   'manifest.json',
@@ -68,4 +67,5 @@ self.addEventListener('activate', event => {
     })
   );
 });
+
 
