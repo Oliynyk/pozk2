@@ -6,31 +6,31 @@ const CACHE_NAME = 'kpnu-schedule-v1';
 
 // Статичні ресурси для кешування (App Shell)
 const STATIC_ASSETS = [
-  '/rozk2/',
-  '/rozk2/index.html',
-  '/rozk2/manifest.json',
+  '/pozk2/',
+  '/pozk2/index.html',
+  '/pozk2/manifest.json',
 
   // Стилі
-  '/rozk2/style.css',
-  '/rozk2/calendar.css',
-  '/rozk2/chat.css',
+  '/pozk2/style.css',
+  '/pozk2/calendar.css',
+  '/pozk2/chat.css',
 
   // Основні скрипти
-  '/rozk2/utils.js',
-  '/rozk2/navigation.js',
-  '/rozk2/schedule.js',
-  '/rozk2/search.js',
-  '/rozk2/calendar.js',
-  '/rozk2/bells_scheduler.js',
-  '/rozk2/meteo.js',
-  '/rozk2/news.js',
-  '/rozk2/login.js',
-  '/rozk2/chat-folders.js',
-  '/rozk2/animations.js',
-  '/rozk2/accent-color.js',
-  '/rozk2/font-size.js',
-  '/rozk2/settings-reset.js',
-  '/rozk2/webauthn.js',
+  '/pozk2/utils.js',
+  '/pozk2/navigation.js',
+  '/pozk2/schedule.js',
+  '/pozk2/search.js',
+  '/pozk2/calendar.js',
+  '/pozk2/bells_scheduler.js',
+  '/pozk2/meteo.js',
+  '/pozk2/news.js',
+  '/pozk2/login.js',
+  '/pozk2/chat-folders.js',
+  '/pozk2/animations.js',
+  '/pozk2/accent-color.js',
+  '/pozk2/font-size.js',
+  '/pozk2/settings-reset.js',
+  '/pozk2/webauthn.js',
 
   // Іконки PWA
   './images/icon-192x192.png',
@@ -206,4 +206,5 @@ self.addEventListener('notificationclick', event => {
     clients.openWindow(event.notification.data.url || './')
   );
 });
+
 
