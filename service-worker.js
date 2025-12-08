@@ -6,31 +6,31 @@ const CACHE_NAME = 'kpnu-schedule-v1';
 
 // Статичні ресурси для кешування (App Shell)
 const STATIC_ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
+  '/rozk2/',
+  '/rozk2/index.html',
+  '/rozk2/manifest.json',
 
   // Стилі
-  './style.css',
-  './calendar.css',
-  './chat.css',
+  '/rozk2/style.css',
+  '/rozk2/calendar.css',
+  '/rozk2/chat.css',
 
   // Основні скрипти
-  './utils.js',
-  './navigation.js',
-  './schedule.js',
-  './search.js',
-  './calendar.js',
-  './bells_scheduler.js',
-  './meteo.js',
-  './news.js',
-  './login.js',
-  './chat-folders.js',
-  './animations.js',
-  './accent-color.js',
-  './font-size.js',
-  './settings-reset.js',
-  './webauthn.js',
+  '/rozk2/utils.js',
+  '/rozk2/navigation.js',
+  '/rozk2/schedule.js',
+  '/rozk2/search.js',
+  '/rozk2/calendar.js',
+  '/rozk2/bells_scheduler.js',
+  '/rozk2/meteo.js',
+  '/rozk2/news.js',
+  '/rozk2/login.js',
+  '/rozk2/chat-folders.js',
+  '/rozk2/animations.js',
+  '/rozk2/accent-color.js',
+  '/rozk2/font-size.js',
+  '/rozk2/settings-reset.js',
+  '/rozk2/webauthn.js',
 
   // Іконки PWA
   './images/icon-192x192.png',
@@ -206,3 +206,4 @@ self.addEventListener('notificationclick', event => {
     clients.openWindow(event.notification.data.url || './')
   );
 });
+
