@@ -2,8 +2,8 @@
   "name": "Назва Вашого PWA",
   "short_name": "PWA-Сайт",
   "description": "Короткий опис вашого прогресивного веб-додатку.",
-  "start_url": "/", 
-  "scope": "/",
+  "start_url": "/rozk2/", 
+  "scope": "/rozk2/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#c5e1d100",
@@ -20,3 +20,4 @@
     }
   ]
 }
+
