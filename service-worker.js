@@ -33,8 +33,8 @@ const STATIC_ASSETS = [
   '/pozk2/webauthn.js',
 
   // Іконки PWA
-  './images/icon-192x192.png',
-  './images/icon-512x512.png'
+  '/pozk2/images/icon-192x192.png',
+  '/pozk2/images/icon-512x512.png'
 ];
 
 // API домени (не кешуємо, або кешуємо з network-first)
@@ -186,11 +186,11 @@ self.addEventListener('push', event => {
   const data = event.data.json();
   const options = {
     body: data.body || 'Нове сповіщення',
-    icon: './images/icon-192x192.png',
-    badge: './images/icon-192x192.png',
+    icon: '/pozk2/images/icon-192x192.png',
+    badge: '/pozk2/images/icon-192x192.png',
     vibrate: [100, 50, 100],
     data: {
-      url: data.url || './'
+      url: data.url || '/pozk2/'
     }
   };
 
@@ -203,8 +203,6 @@ self.addEventListener('notificationclick', event => {
   event.notification.close();
 
   event.waitUntil(
-    clients.openWindow(event.notification.data.url || './')
+    clients.openWindow(event.notification.data.url || '/pozk2/')
   );
 });
-
-

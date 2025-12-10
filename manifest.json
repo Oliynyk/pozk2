@@ -1,24 +1,30 @@
 {
-  "name": "Назва Вашого PWA",
-  "short_name": "PWA-Сайт",
-  "description": "Короткий опис вашого прогресивного веб-додатку.",
-  "start_url": "/pozk2/", 
+  "name": "Розклад К-ПНУ",
+  "short_name": "Розклад",
+  "description": "Розклад занять для студентів Кам'янець-Подільського національного університету імені Івана Огієнка",
+  "start_url": "/pozk2/index.html",
   "scope": "/pozk2/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#c5e1d100",
+  "orientation": "portrait",
+  "background_color": "#0f0f0f",
+  "theme_color": "#0ea5e9",
+  "categories": [
+    "education",
+    "utilities"
+  ],
+  "lang": "uk",
   "icons": [
     {
-      "src": "images/clear_day.png",
+      "src": "images/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "images/clear_day.png",
+      "src": "images/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
-
-

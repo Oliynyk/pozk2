@@ -23,6 +23,21 @@ class WebAuthnManager {
         }
         this.isAvailable = this.checkAvailability();
         this.storageKey = 'webauthn_credentials';
+        this.securityEnabledKey = 'webauthn_security_enabled';
+    }
+
+    /**
+     * Check if security verification on page load is enabled
+     */
+    isSecurityEnabled() {
+        return localStorage.getItem(this.securityEnabledKey) === 'true';
+    }
+
+    /**
+     * Enable/disable security verification on page load
+     */
+    setSecurityEnabled(enabled) {
+        localStorage.setItem(this.securityEnabledKey, enabled ? 'true' : 'false');
     }
 
     /**
@@ -242,7 +257,56 @@ class WebAuthnManager {
      */
     unregister() {
         localStorage.removeItem(this.storageKey);
+        localStorage.removeItem(this.securityEnabledKey);
         console.log('WebAuthn credentials removed');
+    }
+
+    /**
+     * Show lock screen overlay
+     */
+    showLockScreen() {
+        const lockScreen = document.getElementById('webauthn-lock-screen');
+        if (lockScreen) {
+            lockScreen.classList.remove('hidden');
+            lockScreen.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+
+            // Re-initialize Lucide icons for lock screen
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        }
+    }
+
+    /**
+     * Hide lock screen overlay
+     */
+    hideLockScreen() {
+        const lockScreen = document.getElementById('webauthn-lock-screen');
+        if (lockScreen) {
+            lockScreen.style.opacity = '0';
+            setTimeout(() => {
+                lockScreen.classList.add('hidden');
+                lockScreen.classList.remove('flex');
+                lockScreen.style.opacity = '';
+                document.body.style.overflow = '';
+            }, 300);
+        }
+    }
+
+    /**
+     * Verify user on page load if security is enabled
+     * @returns {Promise<boolean>} - true if verified or not needed, false if failed
+     */
+    async verifyOnPageLoad() {
+        // Skip if security not enabled or no credentials
+        if (!this.isSecurityEnabled() || !this.hasRegisteredCredentials()) {
+            return true;
+        }
+
+        // Show lock screen
+        this.showLockScreen();
+        return false; // Will be unlocked via unlockApp()
     }
 
     /**
@@ -312,6 +376,9 @@ function setupWebAuthnToggle() {
                 });
 
                 settingRow.querySelector('p').textContent = originalText;
+
+                // Enable security verification on page load
+                manager.setSecurityEnabled(true);
                 showToast('Face/Touch ID увімкнено! 🎉');
 
             } catch (error) {
@@ -320,7 +387,7 @@ function setupWebAuthnToggle() {
                 this.checked = false;
             }
         } else {
-            // User wants to disable - remove credentials
+            // User wants to disable - remove credentials and security
             manager.unregister();
             showToast('Face/Touch ID вимкнено');
         }
@@ -374,14 +441,55 @@ window.biometricLogin = async function () {
 };
 
 /**
+ * Unlock app function - called from lock screen button
+ */
+window.unlockApp = async function () {
+    const manager = window.webAuthnManager;
+    const unlockBtn = document.getElementById('unlock-btn');
+
+    if (unlockBtn) {
+        unlockBtn.disabled = true;
+        unlockBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i>Перевірка...';
+    }
+
+    try {
+        // Authenticate with biometrics
+        await manager.authenticate();
+
+        // Success - hide lock screen
+        manager.hideLockScreen();
+        showToast('Розблоковано! ✅');
+
+    } catch (error) {
+        console.error('Unlock failed:', error);
+        showToast(error.message, 'error');
+
+        // Reset button
+        if (unlockBtn) {
+            unlockBtn.disabled = false;
+            unlockBtn.innerHTML = '<i class="fa-solid fa-fingerprint mr-3"></i>Розблокувати';
+        }
+    }
+};
+
+/**
  * Initialize WebAuthn when DOM is ready
  */
 document.addEventListener('DOMContentLoaded', () => {
+    const manager = window.webAuthnManager;
+
+    // Check if security verification is needed on page load
+    if (manager.isSecurityEnabled() && manager.hasRegisteredCredentials()) {
+        console.log('WebAuthn: Security enabled, showing lock screen');
+        manager.showLockScreen();
+    }
+
     // Setup toggle in settings
     setupWebAuthnToggle();
 
-    console.log('WebAuthn initialized. Available:', window.webAuthnManager.isAvailable);
-    console.log('Credentials registered:', window.webAuthnManager.hasRegisteredCredentials());
+    console.log('WebAuthn initialized. Available:', manager.isAvailable);
+    console.log('Credentials registered:', manager.hasRegisteredCredentials());
+    console.log('Security enabled:', manager.isSecurityEnabled());
 });
 
 // Export for use in other modules

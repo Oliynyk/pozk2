@@ -413,7 +413,6 @@ document.addEventListener('DOMContentLoaded', () => {
         searchOverlay.classList.remove('hidden');
         setTimeout(() => searchOverlay.classList.add('active'), 10);
         renderSavedCities();
-        if (cityInputEl) setTimeout(() => cityInputEl.focus(), 50);
     }
 
     function closeSearchModal() {
