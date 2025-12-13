@@ -115,6 +115,9 @@ async function openFolderEdit(folderId = null) {
     const deleteBtn = document.getElementById('delete-folder-btn');
     const chatsContainer = document.getElementById('folder-chats-list');
 
+    // Load all chats first to ensure we have names/avatars
+    await fetchAllChats();
+
     if (folderId) {
         // Edit existing folder
         if (titleEl) titleEl.textContent = 'Редагувати папку';
@@ -146,6 +149,33 @@ async function openFolderEdit(folderId = null) {
 
     renderFolderChats();
     setupAutoSave();
+}
+
+/**
+ * Fetch all chats (data only)
+ */
+async function fetchAllChats() {
+    // If we already have chats loaded, don't fetch again unless forced?
+    // For now, let's just check if empty to avoid excessive reads
+    if (availableChats.length > 0) return;
+
+    const db = window.firebaseDb;
+    const auth = window.firebaseAuth;
+
+    if (!db || !auth?.currentUser) return;
+
+    try {
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const chatsRef = collection(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'chats');
+        const snapshot = await getDocs(chatsRef);
+
+        availableChats = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+    } catch (error) {
+        console.error('Error fetching chats:', error);
+    }
 }
 
 async function createNewFolder() {
@@ -204,19 +234,25 @@ function renderFolderChats() {
         return;
     }
 
-    container.innerHTML = currentFolderChats.map(chatId => `
-        <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-bold">
-                    ${chatId.substring(0, 2).toUpperCase()}
+    container.innerHTML = currentFolderChats.map(chatId => {
+        // Find chat details
+        const chat = availableChats.find(c => c.id === chatId) || { id: chatId, title: 'Невідомий чат', avatar: null };
+        const name = chat.title || 'Без назви';
+        const avatarHtml = getChatAvatar(chat);
+
+        return `
+        <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl transition-colors hover:bg-white/10">
+            <div class="flex items-center gap-3 overflow-hidden">
+                <div class="w-9 h-9 shrink-0">
+                    ${avatarHtml}
                 </div>
-                <span class="text-white text-sm">${chatId}</span>
+                <span class="text-white text-sm truncate font-medium">${name}</span>
             </div>
-            <button onclick="removeChatFromFolder('${chatId}')" class="text-red-400 hover:text-red-300 p-2">
+            <button onclick="removeChatFromFolder('${chatId}')" class="text-red-400 hover:text-red-300 p-2 rounded-full hover:bg-red-500/10 transition-colors">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 async function removeChatFromFolder(chatId) {
@@ -278,34 +314,75 @@ async function loadAvailableChats() {
     const container = document.getElementById('available-chats-list');
     if (!container) return;
 
-    // Mock chats - replace with actual chat loading logic
-    availableChats = [
-        { id: 'chat_1', name: 'Проєктна група', avatar: 'UX' },
-        { id: 'chat_2', name: 'Анна Бойко', avatar: 'АБ' },
-        { id: 'chat_3', name: 'Робочий чат', avatar: 'РЧ' },
-        { id: 'chat_4', name: 'Друзі', avatar: 'ДР' },
-        { id: 'chat_5', name: 'Сім\'я', avatar: 'СМ' }
-    ];
+    container.innerHTML = '<div class="text-center py-8 text-white/40"><i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i><p>Завантаження чатів...</p></div>';
 
+    // Force refresh when opening the list to ensure we have latest chats
+    availableChats = [];
+    await fetchAllChats();
+
+    if (availableChats.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-10 text-white/40">
+                <i class="fa-regular fa-comments text-4xl mb-3 opacity-50"></i>
+                <p>У вас поки немає чатів</p>
+            </div>
+        `;
+        return;
+    }
+
+    renderAvailableChatsList(container);
+}
+
+function renderAvailableChatsList(container) {
     container.innerHTML = availableChats.map(chat => {
         const isAdded = currentFolderChats.includes(chat.id);
+        // Determine avatar/name based on chat type
+        const name = chat.title || 'Без назви';
+        const avatarHtml = getChatAvatar(chat);
+
         return `
-            <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-brand-cyan/20 flex items-center justify-center text-xs text-brand-cyan font-bold">
-                        ${chat.avatar}
+            <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="w-10 h-10 shrink-0">
+                        ${avatarHtml}
                     </div>
-                    <span class="text-white">${chat.name}</span>
+                    <span class="text-white truncate font-medium">${name}</span>
                 </div>
                 ${isAdded
-                ? `<span class="text-green-400 text-sm"><i class="fa-solid fa-check mr-1"></i> Додано</span>`
-                : `<button onclick="addChatToFolder('${chat.id}')" class="px-3 py-1.5 bg-brand-cyan/15 text-brand-cyan rounded-full text-sm font-medium hover:bg-brand-cyan/25 transition-colors">
+                ? `<span class="text-brand-cyan text-sm flex items-center shrink-0"><i class="fa-solid fa-check mr-1.5"></i> Додано</span>`
+                : `<button onclick="addChatToFolder('${chat.id}')" class="px-4 py-1.5 bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20 rounded-full text-sm font-medium hover:bg-brand-cyan/20 active:scale-95 transition-all shrink-0">
                         <i class="fa-solid fa-plus mr-1"></i> Додати
                        </button>`
             }
             </div>
         `;
     }).join('');
+}
+
+function getChatAvatar(chat) {
+    if (chat.isGroup) {
+        const emoji = chat.emoji || '👥';
+        return `
+            <div class="w-full h-full rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-lg shadow-lg">
+                ${emoji}
+            </div>
+        `;
+    } else {
+        if (chat.avatar) {
+            return `
+                <img src="${chat.avatar}" 
+                     class="w-full h-full rounded-full bg-gray-700 object-cover"
+                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center text-white text-sm font-bold\\'>${(chat.title || '?')[0].toUpperCase()}</div>'">
+            `;
+        } else {
+            const initial = (chat.title || '?')[0].toUpperCase();
+            return `
+                <div class="w-full h-full rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center text-white text-sm font-bold shadow-lg">
+                    ${initial}
+                </div>
+            `;
+        }
+    }
 }
 
 async function addChatToFolder(chatId) {
@@ -326,6 +403,7 @@ async function addChatToFolder(chatId) {
 
 let selectedFolderTab = 'all';
 let tabsFoldersUnsubscribe = null;
+let loadedFolderData = []; // Store folder data for filtering
 
 async function renderChatFolderTabs() {
     const container = document.getElementById('chat-folder-tabs');
@@ -349,18 +427,23 @@ async function renderChatFolderTabs() {
         tabsFoldersUnsubscribe = onSnapshot(
             query(foldersRef, orderBy('createdAt', 'asc')),
             (snapshot) => {
+                // Store loaded folders for filtering
+                loadedFolderData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
                 // Build tabs HTML: "Всі чати" + dynamic folders
                 const allChatsTab = `
                     <button class="folder-tab ${selectedFolderTab === 'all' ? 'active' : ''} flex-1 min-w-max px-4 py-2 rounded-full ${selectedFolderTab === 'all' ? 'bg-white/10 text-white font-semibold shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5 font-medium'} text-[13px] whitespace-nowrap active:scale-95 transition-all" 
                         data-folder="all" onclick="selectFolderTab('all')">Всі чати</button>
                 `;
 
-                const folderTabs = snapshot.docs.map(doc => {
-                    const folder = doc.data();
-                    const isActive = selectedFolderTab === doc.id;
+                const folderTabs = loadedFolderData.map(folder => {
+                    const isActive = selectedFolderTab === folder.id;
                     return `
                         <button class="folder-tab ${isActive ? 'active' : ''} flex-1 min-w-max px-4 py-2 rounded-full ${isActive ? 'bg-white/10 text-white font-semibold shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5 font-medium'} text-[13px] whitespace-nowrap active:scale-95 transition-all" 
-                            data-folder="${doc.id}" onclick="selectFolderTab('${doc.id}')">${folder.name || 'Без назви'}</button>
+                            data-folder="${folder.id}" onclick="selectFolderTab('${folder.id}')">${folder.name || 'Без назви'}</button>
                     `;
                 }).join('');
 
@@ -381,8 +464,19 @@ function selectFolderTab(folderId) {
         tab.className = `folder-tab ${isActive ? 'active' : ''} flex-1 min-w-max px-4 py-2 rounded-full ${isActive ? 'bg-white/10 text-white font-semibold shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5 font-medium'} text-[13px] whitespace-nowrap active:scale-95 transition-all`;
     });
 
-    // TODO: Filter chats by folder
-    console.log('Selected folder:', folderId);
+    // Filter chats by folder
+    if (typeof window.filterChatsList === 'function') {
+        if (folderId === 'all') {
+            window.filterChatsList('all');
+        } else {
+            const folder = loadedFolderData.find(f => f.id === folderId);
+            if (folder && folder.chatIds) {
+                window.filterChatsList(folder.chatIds);
+            } else {
+                window.filterChatsList([]); // Empty folder
+            }
+        }
+    }
 }
 
 // Listen for view changes

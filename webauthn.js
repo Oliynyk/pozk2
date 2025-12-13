@@ -275,6 +275,11 @@ class WebAuthnManager {
             if (window.lucide) {
                 window.lucide.createIcons();
             }
+
+            // Automatically trigger authentication after a short delay
+            setTimeout(() => {
+                this.autoUnlock();
+            }, 500);
         }
     }
 
@@ -291,6 +296,65 @@ class WebAuthnManager {
                 lockScreen.style.opacity = '';
                 document.body.style.overflow = '';
             }, 300);
+        }
+    }
+
+    /**
+     * Automatically unlock the app without user interaction
+     */
+    async autoUnlock() {
+        const statusElement = document.getElementById('auth-status');
+
+        // Update status to authenticating
+        if (statusElement) {
+            statusElement.innerHTML = `
+                <div class="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></div>
+                <span class="text-white/80 text-sm font-medium">Автентифікація...</span>
+            `;
+        }
+
+        try {
+            // Authenticate with biometrics
+            await this.authenticate();
+
+            // Success - update status
+            if (statusElement) {
+                statusElement.innerHTML = `
+                    <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+                    <span class="text-emerald-400 text-sm font-medium">Успішно! ✓</span>
+                `;
+            }
+
+            // Hide lock screen after brief delay
+            setTimeout(() => {
+                this.hideLockScreen();
+                if (window.showToast) {
+                    showToast('Розблоковано! ✅');
+                }
+            }, 800);
+
+        } catch (error) {
+            console.error('Auto unlock failed:', error);
+
+            // Update status to error
+            if (statusElement) {
+                statusElement.innerHTML = `
+                    <div class="w-2 h-2 rounded-full bg-red-400"></div>
+                    <span class="text-red-400 text-sm font-medium">${error.message || 'Помилка автентифікації'}</span>
+                `;
+            }
+
+            // Show retry option after delay
+            setTimeout(() => {
+                if (statusElement) {
+                    statusElement.innerHTML = `
+                        <button onclick="window.webAuthnManager.autoUnlock()" class="px-6 py-3 rounded-xl bg-gradient-to-r from-brand-cyan to-purple-500 text-white font-bold text-sm active:scale-95 transition-all duration-300 shadow-lg shadow-brand-cyan/30 hover:shadow-xl hover:shadow-brand-cyan/40">
+                            <i class="fa-solid fa-fingerprint mr-2"></i>
+                            Спробувати знову
+                        </button>
+                    `;
+                }
+            }, 2000);
         }
     }
 

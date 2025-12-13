@@ -4,7 +4,7 @@
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-import { getFirestore } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+import { getFirestore, setDoc, doc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -20,6 +20,28 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
+
+/**
+ * Save user data to Firestore
+ */
+async function saveUserToFirestore(user) {
+    if (!user) return;
+
+    try {
+        const userRef = doc(db, 'users', user.uid);
+        await setDoc(userRef, {
+            uid: user.uid,
+            displayName: user.displayName || 'Користувач',
+            email: user.email || '',
+            photoURL: user.photoURL || '',
+            lastActive: serverTimestamp()
+        }, { merge: true });
+
+        console.log('User saved to Firestore:', user.email);
+    } catch (error) {
+        console.error('Error saving user to Firestore:', error);
+    }
+}
 
 // UI Elements
 const loginView = document.getElementById('login-view');
@@ -61,6 +83,9 @@ window.signInWithGoogle = async function () {
             photoURL: user.photoURL,
             uid: user.uid
         });
+
+        // Save user to Firestore
+        await saveUserToFirestore(user);
 
         // Smooth transition to dashboard after short delay
         setTimeout(() => {
@@ -277,6 +302,9 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         console.log('User is signed in:', user.email);
 
+        // Save/update user in Firestore
+        saveUserToFirestore(user);
+
         // Update UI with user data
         updateUserProfile(user);
 
@@ -288,8 +316,22 @@ onAuthStateChanged(auth, (user) => {
             // User just logged in or page loaded with session - show dashboard
             showDashboard();
         }
+
+        // Update lastActive every 60 seconds while user is active
+        if (window.userActivityInterval) {
+            clearInterval(window.userActivityInterval);
+        }
+        window.userActivityInterval = setInterval(() => {
+            saveUserToFirestore(user);
+        }, 60000); // Update every 60 seconds
     } else {
         console.log('User is signed out');
+
+        // Clear activity interval
+        if (window.userActivityInterval) {
+            clearInterval(window.userActivityInterval);
+            window.userActivityInterval = null;
+        }
 
         // Show login if no active view or we need to switch
         const hasActiveView = document.querySelector('.app-view.active-view');

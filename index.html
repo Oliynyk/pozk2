@@ -161,22 +161,6 @@
                                 </div>
                             </button>
 
-                            <!-- Divider with "або" -->
-                            <div class="flex items-center gap-3 my-4">
-                                <div class="flex-1 h-px bg-white/10"></div>
-                                <span class="text-xs text-gray-500 uppercase tracking-wider">або</span>
-                                <div class="flex-1 h-px bg-white/10"></div>
-                            </div>
-
-                            <!-- Biometric Login Button -->
-                            <button id="biometric-signin-btn"
-                                class="w-full py-3.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-3 group"
-                                onclick="biometricLogin()">
-                                <i
-                                    class="fa-solid fa-fingerprint text-xl text-brand-cyan group-hover:scale-110 transition-transform"></i>
-                                <span class="text-sm font-semibold text-white">Увійти з Face/Touch ID</span>
-                            </button>
-
                             <!-- Terms -->
                             <p class="login-terms">
                                 Продовжуючи, ви погоджуєтесь з <a href="#">Умовами використання</a> та <a
@@ -470,6 +454,37 @@
                     <div id="news-feed" class="pb-10 pt-4 px-0 space-y-8">
                     </div>
 
+                    <!-- Empty State (shown when no news and no cache) -->
+                    <div id="news-empty-state"
+                        class="hidden flex-col items-center justify-center px-8 py-20 text-center">
+
+                        <!-- Icon with gradient background -->
+                        <div class="relative mb-8">
+                            <div class="absolute inset-0 bg-brand-cyan/20 blur-3xl rounded-full"></div>
+                            <div
+                                class="relative w-24 h-24 rounded-full bg-gradient-to-br from-brand-cyan/20 to-purple-500/20 backdrop-blur-sm border border-white/10 flex items-center justify-center">
+                                <i data-lucide="cloud-off" class="w-12 h-12 text-brand-cyan"></i>
+                            </div>
+                        </div>
+
+                        <!-- Title & Description -->
+                        <h3 class="text-2xl font-bold text-white mb-3 font-display">Немає з'єднання</h3>
+                        <p class="text-white/50 text-sm mb-8 max-w-xs leading-relaxed">
+                            Не вдалося завантажити новини з сервера. Можливо, проблема з підключенням або сервер
+                            тимчасово недоступний.
+                        </p>
+
+                        <!-- Retry Button -->
+                        <button id="retry-news-btn" onclick="retryLoadNews()"
+                            class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-brand-cyan/10 to-purple-500/10 hover:from-brand-cyan/20 hover:to-purple-500/20 border border-brand-cyan/30 text-brand-cyan font-semibold transition-all active:scale-95 flex items-center gap-3 shadow-lg shadow-brand-cyan/10">
+                            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                            <span>Спробувати знову</span>
+                        </button>
+
+                        <!-- Last attempt hint -->
+                        <p id="retry-hint" class="text-white/30 text-xs mt-4 hidden"></p>
+                    </div>
+
                     <div id="loading-indicator" class="h-20 flex items-center justify-center hidden">
                         <div class="flex items-center gap-1">
                             <span class="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse"></span>
@@ -700,46 +715,183 @@
         <!-- ==================== 4. CHAT VIEW ==================== -->
         <section id="chat" class="app-view hidden relative min-h-screen ">
 
-            <div class="w-full pt-20 px-4 flex flex-col gap-2 min-h-screen">
-
-                <div
-                    class="flex items-center gap-4 p-4 -mx-4 rounded-3xl hover:bg-white/5 active:bg-white/10 transition-colors cursor-pointer group border border-transparent hover:border-white/5">
-                    <div class="relative w-[54px] h-[54px] shrink-0">
-                        <div
-                            class="w-full h-full rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-900/20">
-                            <i class="fa-regular fa-bookmark"></i>
-                        </div>
-                    </div>
-                    <div
-                        class="flex-1 min-w-0 border-b border-white/5 pb-4 group-last:border-0 h-full flex flex-col justify-center">
-                        <div class="flex justify-between items-center mb-1">
-                            <h3 class="text-[16px] font-bold text-white tracking-wide">Збережене</h3>
-                            <span class="text-[11px] text-gray-500">12:30</span>
-                        </div>
-                        <p class="text-[14px] text-gray-400 truncate"><span class="text-brand-cyan">Ви:</span>
-                            Документи.pdf</p>
-                    </div>
-                </div>
-
-                <div
-                    class="flex items-center gap-4 p-4 -mx-4 rounded-3xl hover:bg-white/5 active:bg-white/10 transition-colors cursor-pointer group border border-transparent hover:border-white/5">
-                    <div class="relative w-[54px] h-[54px] shrink-0">
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                            class="w-full h-full rounded-full bg-gray-800 object-cover">
-                    </div>
-                    <div
-                        class="flex-1 min-w-0 border-b border-white/5 pb-4 group-last:border-0 h-full flex flex-col justify-center">
-                        <div class="flex justify-between items-center mb-1">
-                            <h3 class="text-[16px] font-bold text-white tracking-wide">Максим</h3>
-                            <span class="text-[11px] text-gray-500">Вчора</span>
-                        </div>
-                        <p class="text-[14px] text-gray-400 truncate">Добре, домовились.</p>
-                    </div>
-                </div>
-
-                <div class="h-screen"></div>
+            <div id="chats-list-container" class="w-full pt-20 px-4 flex flex-col gap-2 min-h-screen">
+                <!-- Chats will be dynamically loaded here -->
             </div>
         </section>
+
+
+        <!-- ==================== USERS VIEW ==================== -->
+        <section id="users-view" class="app-view mt-14">
+            <div class="pt-10 px-5 pb-10">
+                <!-- Loading State -->
+                <div id="users-loading" class="space-y-3">
+                    <!-- Skeleton cards -->
+                    <div class="chat-chat-item animate-pulse">
+                        <div class="flex items-center gap-4 p-4">
+                            <div class="w-14 h-14 rounded-full bg-white/10"></div>
+                            <div class="flex-1 space-y-2">
+                                <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                                <div class="h-3 bg-white/10 rounded w-1/2"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-chat-item animate-pulse">
+                        <div class="flex items-center gap-4 p-4">
+                            <div class="w-14 h-14 rounded-full bg-white/10"></div>
+                            <div class="flex-1 space-y-2">
+                                <div class="h-4 bg-white/10 rounded w-2/3"></div>
+                                <div class="h-3 bg-white/10 rounded w-1/3"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-chat-item animate-pulse">
+                        <div class="flex items-center gap-4 p-4">
+                            <div class="w-14 h-14 rounded-full bg-white/10"></div>
+                            <div class="flex-1 space-y-2">
+                                <div class="h-4 bg-white/10 rounded w-1/2"></div>
+                                <div class="h-3 bg-white/10 rounded w-2/5"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="users-empty" class="hidden flex-col items-center justify-center py-20 text-center">
+                    <div class="relative mb-6">
+                        <div class="absolute inset-0 bg-brand-cyan/20 blur-3xl rounded-full"></div>
+                        <div
+                            class="relative w-20 h-20 rounded-full bg-gradient-to-br from-brand-cyan/20 to-purple-500/20 backdrop-blur-sm border border-white/10 flex items-center justify-center">
+                            <i class="fa-solid fa-users text-3xl text-brand-cyan"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 font-display">Поки що немає користувачів</h3>
+                    <p class="text-white/50 text-sm max-w-xs">
+                        Користувачі з'являться тут після входу в систему
+                    </p>
+                </div>
+
+                <!-- Users List Container -->
+                <div id="users-list" class="flex flex-col gap-2 hidden">
+                    <!-- Users will be dynamically inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <section id="individual-chat-view" class="app-view hidden h-screen overflow-hidden"
+            style="overscroll-behavior: none;">
+            <div class="flex flex-col h-full relative">
+                <!-- Empty State (Modern Design) -->
+                <div id="chat-empty-state" class="flex-1 flex flex-col items-center justify-center px-6 text-center">
+                    <!-- Animated Gradient Circle -->
+                    <div class="relative w-40 h-40 mb-8">
+                        <div
+                            class="absolute inset-0 rounded-full bg-gradient-to-tr from-brand-cyan via-blue-500 to-purple-600 blur-[40px] opacity-40 animate-pulse">
+                        </div>
+                        <div class="absolute inset-4 rounded-full bg-[#0f172a] z-10"></div>
+                        <div
+                            class="absolute inset-4 rounded-full border border-white/10 flex items-center justify-center z-20 backdrop-blur-sm">
+                            <i
+                                class="fa-regular fa-comments text-5xl text-brand-cyan drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-3 tracking-wide">Почніть спілкування</h3>
+                    <p class="text-gray-400 max-w-xs leading-relaxed font-light">
+                        Надішліть перше повідомлення, щоб розпочати діалог
+                        <span class="block mt-4 text-sm text-brand-cyan/80 animate-bounce">✨</span>
+                    </p>
+                </div>
+
+                <!-- Messages Container -->
+                <div id="chat-messages-container"
+                    class="hidden flex-1 overflow-y-auto px-4 pt-20 pb-20 flex flex-col-reverse">
+                    <!-- Messages will be inserted here (newest at bottom) -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== USERS SORT MODAL ==================== -->
+        <div id="users-sort-modal" class="hidden fixed inset-0 z-[112]">
+            <div class="absolute inset-0 bg-black/10 backdrop-blur-sm" onclick="toggleUsersSortMenu()"></div>
+            <div
+                class="absolute top-16 right-4 w-64 bg-[#0f172a]/95 border border-white/10 rounded-2xl shadow-xl overflow-hidden animate-fade-in-down">
+                <div class="flex flex-col p-1.5">
+                    <!-- Alphabet Sort -->
+                    <div
+                        class="flex items-center justify-between px-4 py-3 text-sm text-white rounded-xl hover:bg-white/10 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-sort-alpha-down w-5 text-center text-brand-cyan"></i>
+                            <span>По алфавіту</span>
+                        </div>
+                        <label class="relative inline-block w-10 h-5 cursor-pointer">
+                            <input type="checkbox" id="sort-alphabet-toggle" class="sr-only peer"
+                                onchange="toggleAlphabetSort(this.checked)">
+                            <span
+                                class="absolute inset-0 bg-white/20 rounded-full transition peer-checked:bg-[#00F2EA]"></span>
+                            <span
+                                class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></span>
+                        </label>
+                    </div>
+
+                    <div class="h-px bg-white/5 my-1 mx-2"></div>
+
+                    <!-- Faculty Filter (placeholder) -->
+                    <div class="flex items-center justify-between px-4 py-3 text-sm text-white/50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-building-columns w-5 text-center"></i>
+                            <span>Факультет</span>
+                        </div>
+                        <label class="relative inline-block w-10 h-5 cursor-not-allowed opacity-50">
+                            <input type="checkbox" class="sr-only" disabled>
+                            <span class="absolute inset-0 bg-white/20 rounded-full"></span>
+                            <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></span>
+                        </label>
+                    </div>
+
+                    <!-- Group Filter (placeholder) -->
+                    <div class="flex items-center justify-between px-4 py-3 text-sm text-white/50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-users-rectangle w-5 text-center"></i>
+                            <span>Група</span>
+                        </div>
+                        <label class="relative inline-block w-10 h-5 cursor-not-allowed opacity-50">
+                            <input type="checkbox" class="sr-only" disabled>
+                            <span class="absolute inset-0 bg-white/20 rounded-full"></span>
+                            <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></span>
+                        </label>
+                    </div>
+
+                    <div class="h-px bg-white/5 my-1 mx-2"></div>
+
+                    <!-- Student Filter (placeholder) -->
+                    <div class="flex items-center justify-between px-4 py-3 text-sm text-white/50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-graduation-cap w-5 text-center"></i>
+                            <span>Студент</span>
+                        </div>
+                        <label class="relative inline-block w-10 h-5 cursor-not-allowed opacity-50">
+                            <input type="checkbox" class="sr-only" disabled>
+                            <span class="absolute inset-0 bg-white/20 rounded-full"></span>
+                            <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></span>
+                        </label>
+                    </div>
+
+                    <!-- Teacher Filter (placeholder) -->
+                    <div class="flex items-center justify-between px-4 py-3 text-sm text-white/50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-chalkboard-user w-5 text-center"></i>
+                            <span>Викладач</span>
+                        </div>
+                        <label class="relative inline-block w-10 h-5 cursor-not-allowed opacity-50">
+                            <input type="checkbox" class="sr-only" disabled>
+                            <span class="absolute inset-0 bg-white/20 rounded-full"></span>
+                            <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script>
             function toggleChatMenu() {
                 const modal = document.getElementById('chat-top-menu-modal');
@@ -1499,6 +1651,46 @@
         </button>
 
     </nav>
+
+    <!-- Global Chat Input Island (Hidden by default) -->
+    <div id="chat-input-island"
+        class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[99] w-full max-w-2xl px-4 animate-fade-in-up">
+        <div class="rounded-full px-2 py-2 shadow-2xl backdrop-blur-sm bg-black/20 border border-white/10">
+            <div class="flex items-center gap-1">
+                <!-- Emoji Button -->
+                <button id="chat-emoji-btn"
+                    class="w-11 h-11 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 active:scale-95 transition-all flex-shrink-0">
+                    <span class="material-icons-round text-xl">sentiment_satisfied</span>
+                </button>
+
+                <!-- Message Input -->
+                <div class="flex-1 relative">
+                    <input type="text" id="chat-message-input" placeholder="Повідомлення"
+                        class="w-full bg-transparent text-white text-sm placeholder-white/40 outline-none px-2 py-2"
+                        autocomplete="off" />
+                </div>
+
+                <!-- File & Voice Buttons (shown when empty) -->
+                <div id="chat-media-buttons" class="flex items-center gap-1">
+                    <button id="chat-file-btn"
+                        class="w-11 h-11 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 active:scale-95 transition-all flex-shrink-0">
+                        <span class="material-icons-round text-xl">add_circle_outline</span>
+                    </button>
+                    <button id="chat-voice-btn"
+                        class="w-11 h-11 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 active:scale-95 transition-all flex-shrink-0">
+                        <span class="material-icons-round text-xl">mic_none</span>
+                    </button>
+                </div>
+
+                <!-- Send Button (shown when typing) -->
+                <button id="chat-send-btn"
+                    class="hidden w-11 h-11 rounded-full bg-gradient-to-br from-brand-cyan to-cyan-400 text-black flex items-center justify-center shadow-lg shadow-brand-cyan/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:shadow-none flex-shrink-0"
+                    disabled>
+                    <span class="material-icons-round text-xl font-bold">arrow_upward</span>
+                </button>
+            </div>
+        </div>
+    </div>
     <div id="city-search-overlay" class="fixed inset-0 z-[9999] hidden" aria-hidden="true">
 
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity opacity-0 overlay-backdrop"></div>
@@ -1650,7 +1842,8 @@
                     <i class="fa-solid fa-users"></i>
                 </div>
             </button>
-            <button class="flex items-center gap-4 group hover:-translate-x-1 transition-transform">
+            <button class="flex items-center gap-4 group hover:-translate-x-1 transition-transform"
+                onclick="openView('users-view')">
                 <span
                     class="bg-[#0f172a] text-white text-sm font-medium py-2 px-4 rounded-xl border border-white/10 shadow-lg">Новий
                     чат</span>
@@ -1670,6 +1863,9 @@
     <!-- External Logic 
        Потім звільнення -->
     <script type="module" src="login.js"></script>
+    <script type="module" src="users.js"></script>
+    <script type="module" src="individual-chat.js"></script>
+    <script type="module" src="chats-list.js"></script>
     <script type="module" src="chat-folders.js"></script>
     <script type="module" src="webauthn.js"></script>
     <script type="module" src="animations.js"></script>
@@ -1698,28 +1894,44 @@
 
     <!-- WebAuthn Lock Screen -->
     <div id="webauthn-lock-screen"
-        class="fixed inset-0 bg-[#0f0d1a]/98 backdrop-blur-xl z-[9999] hidden flex-col items-center justify-center transition-opacity duration-300">
-        <div class="text-center px-8">
-            <!-- Icon Container -->
-            <div
-                class="w-28 h-28 mx-auto mb-8 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center relative">
-                <div class="absolute inset-0 rounded-full bg-brand-cyan/10 blur-xl animate-pulse"></div>
-                <i data-lucide="fingerprint" class="w-14 h-14 text-white/80 relative z-10"></i>
+        class="fixed inset-0 bg-gradient-to-br from-[#0a0a1a] via-[#0f0d1a] to-[#1a0a1a] z-[9999] hidden flex-col items-center justify-center transition-opacity duration-500">
+        <!-- Animated background gradient -->
+        <div class="absolute inset-0 overflow-hidden opacity-30">
+            <div class="absolute top-1/4 -left-20 w-96 h-96 bg-brand-cyan/20 rounded-full blur-[120px] animate-pulse">
+            </div>
+            <div class="absolute bottom-1/4 -right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-[120px] animate-pulse"
+                style="animation-delay: 1s;"></div>
+        </div>
+
+        <div class="relative text-center px-8 max-w-md">
+            <!-- Fingerprint Icon with Pulsing Animation -->
+            <div class="relative mx-auto mb-12 w-32 h-32 flex items-center justify-center">
+                <!-- Outer pulsing rings -->
+                <div class="absolute inset-0 rounded-full border-2 border-brand-cyan/30 animate-ping"></div>
+                <div class="absolute inset-0 rounded-full border border-brand-cyan/20 animate-pulse"></div>
+
+                <!-- Main icon container -->
+                <div
+                    class="relative w-24 h-24 rounded-full bg-gradient-to-br from-brand-cyan/20 to-purple-500/20 backdrop-blur-sm border border-white/10 flex items-center justify-center shadow-2xl shadow-brand-cyan/20">
+                    <i data-lucide="fingerprint" class="w-12 h-12 text-brand-cyan"></i>
+                </div>
             </div>
 
-            <!-- Title -->
-            <h1 class="text-2xl font-bold text-white mb-2 font-display">Підтвердіть особистість</h1>
-            <p class="text-white/50 text-sm mb-10">Використайте Face ID, Touch ID або PIN</p>
+            <!-- Title & Description -->
+            <div class="space-y-3 mb-8">
+                <h1 class="text-3xl font-bold text-white font-display tracking-tight">Автентифікація</h1>
+                <p class="text-white/60 text-base font-medium">Підтвердіть свою особистість</p>
+            </div>
 
-            <!-- Unlock Button -->
-            <button id="unlock-btn" onclick="window.unlockApp()"
-                class="px-10 py-4 rounded-2xl bg-gradient-to-r from-brand-cyan to-purple-500 text-white font-bold text-lg active:scale-95 transition-all duration-300 shadow-lg shadow-brand-cyan/30 hover:shadow-xl hover:shadow-brand-cyan/40 flex items-center justify-center mx-auto min-w-[220px]">
-                <i class="fa-solid fa-fingerprint mr-3"></i>
-                Розблокувати
-            </button>
+            <!-- Status Message -->
+            <div id="auth-status"
+                class="flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                <div class="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></div>
+                <span class="text-white/80 text-sm font-medium">Очікування біометрії...</span>
+            </div>
 
-            <!-- Hint -->
-            <p class="text-white/30 text-xs mt-8">Натисніть кнопку для автентифікації</p>
+            <!-- Alternative action hint -->
+            <p class="text-white/40 text-xs mt-8 font-medium">Face ID • Touch ID • PIN</p>
         </div>
     </div>
 

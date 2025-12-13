@@ -43,6 +43,28 @@ const NAV_CONFIG = {
         }
     },
 
+    'individual-chat-view': {
+        left: { icon: 'arrow_back_ios_new', action: () => window.closeIndividualChat(), style: BTN_STYLES.DEFAULT },
+        right: {
+            icon: 'more_vert',
+            action: () => { console.log('Chat menu - coming soon'); },
+            style: BTN_STYLES.DEFAULT
+        },
+        centerHtml: `
+            <div id="chat-header-info" class="h-12 gap-2 px-1 py-1 rounded-full bg-black/20 backdrop-blur-md border border-white/10 flex items-center cursor-pointer">
+                <div class="relative">
+                    <img id="chat-header-avatar" src="" class="w-9 h-9 rounded-full object-cover bg-gray-700 hidden">
+                    <div id="chat-header-initials" class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-cyan to-blue-600 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-brand-cyan/20">
+                    </div>
+                </div>
+                <div class="flex flex-col pr-2.5 gap-0.5">
+                    <h3 id="chat-header-name" class="text-sm font-bold text-white leading-tight"></h3>
+                    <span id="chat-header-status" class="text-[10px] text-brand-cyan/80 font-medium">Онлайн</span>
+                </div>
+            </div>
+        `
+    },
+
     'schedule-view': {
         left: { icon: 'arrow_back_ios_new', action: () => window.goBack(), style: BTN_STYLES.DEFAULT, id: 'global-back-btn' },
         right: {
@@ -63,6 +85,27 @@ const NAV_CONFIG = {
                     <button class="folder-tab active flex-1 min-w-max px-4 py-2 rounded-full bg-white/10 text-white text-[13px] font-semibold shadow-sm whitespace-nowrap active:scale-95 transition-all" data-folder="all">Всі чати</button>
                     <!-- Dynamic folder tabs injected by chat-folders.js -->
                 </div>
+            </div>
+        `
+    },
+
+    'users-view': {
+        left: { icon: 'arrow_back_ios_new', action: () => window.openView('chat'), style: BTN_STYLES.DEFAULT },
+        right: {
+            icon: 'tune',
+            action: () => window.toggleUsersSortMenu(),
+            style: BTN_STYLES.DEFAULT
+        },
+        centerHtml: `
+            <div class="w-full h-12 rounded-full bg-black/20 backdrop-blur-md border border-white/10 flex items-center px-4 shadow-lg transition-all duration-300 mx-2">
+                <i class="material-icons text-white/50 text-xl mr-2">search</i>
+                <input 
+                    type="text" 
+                    id="users-search-input" 
+                    placeholder="Пошук користувачів..." 
+                    class="flex-1 bg-transparent text-white text-sm placeholder-white/40 outline-none"
+                    autocomplete="off"
+                />
             </div>
         `
     },

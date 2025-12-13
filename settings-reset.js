@@ -137,7 +137,7 @@ const STORAGE_CATEGORIES = {
     'Новини': {
         icon: 'fa-newspaper',
         color: 'orange',
-        keys: ['meridian_last_seen_id']
+        keys: ['meridian_last_seen_id', 'meridian_news_cache', 'meridian_news_cache_timestamp']
     },
     'Безпека': {
         icon: 'fa-fingerprint',

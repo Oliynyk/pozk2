@@ -2157,3 +2157,43 @@ input:checked+.slider:before {
     /* Hide checkmark by default */
     transition: opacity 0.2s;
 }
+
+/* ==================== Individual Chat Animations ==================== */
+@keyframes send-icon {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+
+    50% {
+        transform: rotate(-10deg) scale(1.1);
+    }
+
+    100% {
+        transform: rotate(0deg) scale(1);
+    }
+}
+
+.animate-send {
+    animation: send-icon 0.3s ease-in-out;
+}
+
+/* Message bubble fade-in animation */
+@keyframes message-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message-bubble-animate {
+    animation: message-fade-in 0.3s ease-out;
+}
+
+.animate-send:hover {
+    animation: send-icon 0.6s ease-in-out infinite;
+}
