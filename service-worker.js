@@ -2,7 +2,7 @@
 // SERVICE WORKER - Розклад К-ПНУ
 // ==========================================
 
-const CACHE_NAME = 'kpnu-schedule-v1';
+const CACHE_NAME = 'kpnu-schedule-v2';
 
 // Статичні ресурси для кешування (App Shell)
 const STATIC_ASSETS = [
@@ -206,3 +206,4 @@ self.addEventListener('notificationclick', event => {
     clients.openWindow(event.notification.data.url || '/pozk2/')
   );
 });
+
