@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SPA Native Feel</title>
+    <style>
+        /* КРИТИЧНИЙ CSS 
+           Блокуємо прокрутку body, щоб вимкнути нативний 
+           pull-to-refresh браузера (Chrome Android, Safari iOS)
+        */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Це вбиває нативний "pull" */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f2f2f7;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Контейнер застосунку - це єдине, що скролиться */
+        #app {
+            height: 100vh;
+            width: 100vw;
+            overflow-y: auto; /* Вмикаємо скрол тут */
+            -webkit-overflow-scrolling: touch; /* Плавність для iOS */
+            position: relative;
+            background-color: #fff;
+        }
+
+        /* Індикатор оновлення (прихований зверху) */
+        #refresh-spinner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #888;
+            pointer-events: none;
+            transform: translateY(-100%);
+            transition: transform 0.2s ease-out; /* Анімація повернення */
+            z-index: 10;
+        }
+
+        /* Стилі контенту */
+        .header {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 18px;
+            z-index: 5;
+            text-align: center;
+        }
+
+        .content {
+            padding: 20px;
+            min-height: 101vh; /* Гарантує, що скрол завжди є (важливо для фізики) */
+        }
+
+        .card {
+            background: #f9f9f9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        button {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            width: 100%;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        
+        button.secondary {
+            background: #e5e5ea;
+            color: #000;
+        }
+
+        button:active {
+            opacity: 0.8;
+        }
+
+        /* Анімація переходу (опціонально, але приємно) */
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Кастомний індикатор Pull-to-Refresh -->
+    <div id="refresh-spinner">⬇️ Тягніть для оновлення...</div>
+
+    <!-- Основний контейнер -->
+    <div id="app">
+        <!-- Сюди рендеримо екрани -->
+        <div id="view-container"></div>
+    </div>
+
+<script>
+    /**
+     * СТАН ЗАСТОСУНКУ
+     * В реальному проєкті тут може бути Redux або просто об'єкт
+     */
+    const appState = {
+        currentScreen: 'home',
+        items: ['Новина 1', 'Новина 2', 'Новина 3']
+    };
+
+    const container = document.getElementById('view-container');
+    const appScroller = document.getElementById('app');
+    const refresher = document.getElementById('refresh-spinner');
+
+    // --- 1. РЕНДЕРИНГ (View Layer) ---
+
+    function render(screenName) {
+        let html = '';
+        
+        // Простий роутер
+        switch(screenName) {
+            case 'home':
+                html = `
+                    <div class="fade-in">
+                        <div class="header">Головна</div>
+                        <div class="content">
+                            <p style="color: #666; margin-bottom: 20px;">Спробуйте зробити Pull-to-refresh (потягніть вниз).</p>
+                            ${appState.items.map(item => `<div class="card">${item}</div>`).join('')}
+                            <button onclick="goTo('details')">Відкрити деталі ➝</button>
+                            <br><br>
+                            <button class="secondary" onclick="goTo('settings')">Налаштування ⚙️</button>
+                        </div>
+                    </div>
+                `;
+                break;
+            case 'details':
+                html = `
+                    <div class="fade-in">
+                        <div class="header">Деталі</div>
+                        <div class="content">
+                            <div class="card">
+                                <h3>Це внутрішній екран</h3>
+                                <p>Тепер спробуйте зробити свайп "Назад" (від лівого краю екрана на мобільному) або натиснути системну кнопку Back.</p>
+                                <p>Застосунок НЕ закриється, а повернеться на Головну.</p>
+                            </div>
+                            <button onclick="goTo('more')">Ще глибше ➝</button>
+                        </div>
+                    </div>
+                `;
+                break;
+            case 'more':
+                html = `
+                    <div class="fade-in">
+                        <div class="header">Глибокий рівень</div>
+                        <div class="content">
+                            <div class="card">
+                                Третій рівень вкладеності. History stack працює ідеально.
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+            case 'settings':
+                html = `
+                    <div class="fade-in">
+                        <div class="header">Налаштування</div>
+                        <div class="content">
+                            <div class="card">Налаштування профілю</div>
+                        </div>
+                    </div>
+                `;
+                break;
+        }
+        
+        container.innerHTML = html;
+        // Скидаємо скрол вгору при зміні екрану
+        appScroller.scrollTop = 0;
+    }
+
+    // --- 2. НАВІГАЦІЯ (History API) ---
+
+    // Функція переходу (викликаємо її з кнопок)
+    function goTo(screenId) {
+        // Push state: додаємо запис в історію, але URL лишаємо пустим або тим самим
+        history.pushState({ screen: screenId }, '', ''); 
+        appState.currentScreen = screenId;
+        render(screenId);
+    }
+
+    // Обробка кнопки "Назад" / Свайпу
+    window.addEventListener('popstate', (event) => {
+        // Якщо в стані є екран - рендеримо його
+        if (event.state && event.state.screen) {
+            appState.currentScreen = event.state.screen;
+            render(event.state.screen);
+        } else {
+            // Fallback: якщо історія закінчилась, але ми не хочемо виходити
+            // Можна примусово рендерити Home або дозволити вихід
+            render('home'); 
+        }
+    });
+
+    // --- 3. ІНІЦІАЛІЗАЦІЯ ---
+
+    // ВАЖЛИВО: Замінюємо поточний стан на 'home' при завантаженні.
+    // Це створює "якір", щоб перший Back не викидав із сайту.
+    history.replaceState({ screen: 'home' }, '', '');
+    render('home');
+
+
+    // --- 4. CUSTOM PULL TO REFRESH LOGIC ---
+
+    let startY = 0;
+    let isPulling = false;
+    let isRefreshing = false;
+    const THRESHOLD = 70; // Скільки пікселів тягнути для активації
+
+    appScroller.addEventListener('touchstart', (e) => {
+        // Активуємо лише якщо ми на самому верху сторінки
+        if (appScroller.scrollTop <= 0) {
+            startY = e.touches[0].clientY;
+            isPulling = true;
+            // Прибираємо транзишн під час драгу для миттєвої реакції
+            refresher.style.transition = 'none'; 
+        }
+    }, { passive: true });
+
+    appScroller.addEventListener('touchmove', (e) => {
+        if (!isPulling || isRefreshing) return;
+
+        const currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+
+        // Якщо тягнемо вниз (diff > 0) і ми на верху
+        if (diff > 0 && appScroller.scrollTop <= 0) {
+            // Додаємо опір (rubber band effect)
+            const pullDistance = Math.pow(diff, 0.8); 
+            
+            // Візуалізуємо спіннер
+            refresher.style.transform = `translateY(${pullDistance - 60}px)`; // -60 це висота спіннера
+            
+            if (diff > THRESHOLD) {
+                refresher.innerText = "⬆️ Відпустіть для оновлення";
+            } else {
+                refresher.innerText = "⬇️ Тягніть для оновлення...";
+            }
+        }
+    }, { passive: false });
+
+    appScroller.addEventListener('touchend', (e) => {
+        if (!isPulling) return;
+        isPulling = false;
+        
+        // Відновлюємо анімацію
+        refresher.style.transition = 'transform 0.3s ease-out';
+        
+        const currentY = e.changedTouches[0].clientY;
+        const diff = currentY - startY;
+
+        if (diff > THRESHOLD && appScroller.scrollTop <= 0) {
+            // ЗАПУСК ОНОВЛЕННЯ
+            startRefresh();
+        } else {
+            // Скасування - ховаємо спіннер
+            refresher.style.transform = 'translateY(-100%)';
+        }
+    });
+
+    function startRefresh() {
+        if (isRefreshing) return;
+        isRefreshing = true;
+        
+        // Фіксуємо спіннер у видимій зоні
+        refresher.style.transform = 'translateY(0px)';
+        refresher.innerText = "⏳ Оновлення даних...";
+
+        // ІМІТАЦІЯ ЗАПИТУ НА СЕРВЕР
+        setTimeout(() => {
+            // Додаємо нові дані для наочності
+            appState.items.unshift(`Оновлено: ${new Date().toLocaleTimeString()}`);
+            
+            // Перерендер поточного екрану (якщо ми на Home)
+            if (appState.currentScreen === 'home') {
+                render('home');
+            }
+
+            // Завершення
+            refresher.style.transform = 'translateY(-100%)';
+            isRefreshing = false;
+        }, 1500);
+    }
+
+</script>
+
+</body>
+</html>
+
